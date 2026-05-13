@@ -9,6 +9,7 @@ import BalloonPop from './BalloonPop';
 import KangarooJump from './KangarooJump';
 import ShapeSorter from './ShapeSorter';
 import HideSeekKitty from './HideSeekKitty';
+import MagicNecklace from './MagicNecklace';
 import './index.css';
 
 function App() {
@@ -69,6 +70,11 @@ function App() {
               <div className="card-icon">🐱</div>
               <h2>Hide & Seek Kitty</h2>
               <p>Find the kitty in the room!</p>
+            </div>
+            <div className="menu-card" onClick={() => setCurrentGame('necklace')}>
+              <div className="card-icon">✨</div>
+              <h2>Magic Necklace</h2>
+              <p>Complete the color patterns!</p>
             </div>
           </div>
         </div>
@@ -141,6 +147,13 @@ function App() {
         <div style={{ position: 'relative' }}>
           <button className="back-btn" onClick={() => setCurrentGame('menu')}>⬅ BACK</button>
           <HideSeekKitty />
+        </div>
+      )}
+
+      {currentGame === 'necklace' && (
+        <div style={{ position: 'relative' }}>
+          <button className="back-btn" onClick={() => setCurrentGame('menu')}>⬅ BACK</button>
+          <MagicNecklace />
         </div>
       )}
     </div>
