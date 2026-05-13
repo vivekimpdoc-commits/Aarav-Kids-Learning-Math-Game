@@ -13,6 +13,8 @@ const WordMatch = () => {
   const [status, setStatus] = useState('Click "Listen" to start!');
   const [isListening, setIsListening] = useState(false);
   const [score, setScore] = useState(0);
+  const [level, setLevel] = useState(1);
+  const [gameState, setGameState] = useState('playing'); // 'playing', 'levelclear', 'victory'
 
   useEffect(() => {
     generateNewChallenge();
@@ -20,7 +22,11 @@ const WordMatch = () => {
 
   const generateNewChallenge = () => {
     const keys = Object.keys(NUMBER_NAMES);
-    const correct = keys[Math.floor(Math.random() * keys.length)];
+    // Limit keys based on level
+    const maxIndex = Math.min(keys.length, 5 + Math.floor(level * 1.5));
+    const levelKeys = keys.slice(0, maxIndex);
+    
+    const correct = levelKeys[Math.floor(Math.random() * levelKeys.length)];
     setTargetNumber(correct);
     
     // Generate 4 options
@@ -78,10 +84,25 @@ const WordMatch = () => {
     const speech = new SpeechSynthesisUtterance();
     speech.text = "Excellent! " + NUMBER_NAMES[targetNumber];
     window.speechSynthesis.speak(speech);
-    
-    setTimeout(() => {
-      generateNewChallenge();
-    }, 2000);
+
+    if (level === 50) {
+      setGameState('victory');
+    } else {
+      setGameState('levelclear');
+    }
+  };
+
+  const nextLevel = () => {
+    setLevel(l => l + 1);
+    setGameState('playing');
+    generateNewChallenge();
+  };
+
+  const restartGame = () => {
+    setLevel(1);
+    setScore(0);
+    setGameState('playing');
+    generateNewChallenge();
   };
 
   const checkMatch = (num) => {
@@ -94,9 +115,25 @@ const WordMatch = () => {
 
   return (
     <div className="game-container menu-bg" style={{background: 'linear-gradient(135deg, #1e1b4b, #312e81)'}}>
+      {gameState === 'victory' && (
+        <div className="overlay" style={{background: 'rgba(30, 27, 75, 0.9)'}}>
+          <h1 className="victory-text" style={{fontSize: '5rem'}}>🗣️ LINGUIST GENIUS!</h1>
+          <p style={{fontSize: '2rem'}}>Aarav, you mastered all 50 vocabulary levels!</p>
+          <button className="restart-btn" onClick={restartGame}>NEW JOURNEY</button>
+        </div>
+      )}
+
+      {gameState === 'levelclear' && (
+        <div className="overlay" style={{background: 'rgba(99, 102, 241, 0.9)'}}>
+          <h1 className="victory-text" style={{color: 'white'}}>LEVEL {level} CLEAR!</h1>
+          <p style={{fontSize: '1.5rem', marginBottom: '2rem'}}>You are speaking beautifully!</p>
+          <button className="restart-btn" onClick={nextLevel}>NEXT LEVEL</button>
+        </div>
+      )}
+
       <div className="word-match-header">
         <h1 className="menu-title" style={{fontSize: '3.5rem', marginBottom: '1rem'}}>Word Match Master</h1>
-        <div className="score-board">SCORE: {score}</div>
+        <div className="score-board">SCORE: {score} | LEVEL: {level}</div>
       </div>
 
       <div className="main-challenge">

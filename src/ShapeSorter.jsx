@@ -15,6 +15,8 @@ const ShapeSorter = () => {
   const canvasRef = useRef(null);
   const [model, setModel] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [level, setLevel] = useState(1);
+  const [gameState, setGameState] = useState('playing'); // 'playing', 'victory'
   const [targetShape, setTargetShape] = useState('circle');
   const [status, setStatus] = useState('Initializing AI Camera...');
   const [score, setScore] = useState(0);
@@ -89,18 +91,38 @@ const ShapeSorter = () => {
   const handleMatch = (className) => {
     setScore(s => s + 50);
     setStatus(`✨ AMAZING! ${className} matches the ${targetShape.toUpperCase()}!`);
-    const nextShape = shapes[(shapes.indexOf(targetShape) + 1) % shapes.length];
     
-    // Pause detection briefly
-    setTimeout(() => {
-      setTargetShape(nextShape);
-      setStatus(`Now find a ${nextShape.toUpperCase()}!`);
-    }, 3000);
+    if (level === 50) {
+      setGameState('victory');
+    } else {
+      const nextShape = shapes[(shapes.indexOf(targetShape) + 1) % shapes.length];
+      // Pause detection briefly
+      setTimeout(() => {
+        setLevel(l => l + 1);
+        setTargetShape(nextShape);
+        setStatus(`Now find a ${nextShape.toUpperCase()}!`);
+      }, 3000);
+    }
+  };
+
+  const restartGame = () => {
+    setLevel(1);
+    setScore(0);
+    setGameState('playing');
+    setTargetShape('circle');
   };
 
   return (
     <div className="game-container lab-bg" style={{background: '#1e293b'}}>
-      <div className="score-board">SCORE: {score}</div>
+      {gameState === 'victory' && (
+        <div className="overlay" style={{background: 'rgba(99, 102, 241, 0.9)'}}>
+          <h1 className="victory-text" style={{fontSize: '5rem'}}>📐 GEOMETRY GOD!</h1>
+          <p style={{fontSize: '2rem'}}>Aarav, you mastered all 50 geometry missions!</p>
+          <button className="restart-btn" onClick={restartGame}>NEW LAB</button>
+        </div>
+      )}
+
+      <div className="score-board">SCORE: {score} | LEVEL: {level}</div>
       
       <div className="lab-header">
         <h1 className="menu-title" style={{fontSize: '3rem', marginBottom: '1rem'}}>AI Shape Sorter</h1>

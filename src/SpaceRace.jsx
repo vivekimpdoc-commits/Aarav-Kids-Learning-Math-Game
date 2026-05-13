@@ -92,24 +92,35 @@ const SpaceRace = () => {
     e.preventDefault();
     if (parseInt(userInput) === question.a) {
       setScore(s => s + 10);
-      setPlayerPos(prev => {
-        const next = prev + 10;
-        if (next >= 100) {
-          if (level === 50) {
-            setGameState('victory');
-          } else {
-            setGameState('levelclear');
-          }
+      const nextPos = playerPos + 15;
+      setPlayerPos(nextPos);
+      
+      if (nextPos >= 100) {
+        if (level === 50) {
+          setGameState('victory');
+        } else {
+          setGameState('levelclear');
         }
-        return next;
-      });
+      }
+      
+      setStatus('🚀 BOOST ACTIVATED!');
+      const speech = new SpeechSynthesisUtterance("Boost!");
+      window.speechSynthesis.speak(speech);
+      generateQuestion();
+      
       // AI Adaptive: Increase difficulty if player is fast
       setDifficulty(d => d + 0.1);
-      generateQuestion();
     } else {
-      // Penalty: Slow down player or speed up enemy
       setEnemyPos(prev => Math.min(100, prev + 5));
+      setStatus('⚠️ ERROR!');
+      const speech = new SpeechSynthesisUtterance("Error!");
+      window.speechSynthesis.speak(speech);
     }
+  };
+
+  const setStatus = (msg) => {
+    // This is just a UI feedback helper, usually we'd have a state but we can just log or update a status bar
+    console.log(msg);
   };
 
   const startGame = () => {
@@ -128,7 +139,6 @@ const SpaceRace = () => {
     setPlayerPos(0);
     setEnemyPos(0);
     setLevel(l => l + 1);
-    // Adjusted time decrease: Start with 180, minus 2 seconds per level, minimum 60
     setTimeLeft(Math.max(60, 180 - (level * 2)));
     setIsPaused(false);
     setGameState('playing');

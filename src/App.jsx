@@ -8,6 +8,7 @@ import SpaceRace from './SpaceRace';
 import BalloonPop from './BalloonPop';
 import KangarooJump from './KangarooJump';
 import ShapeSorter from './ShapeSorter';
+import HideSeekKitty from './HideSeekKitty';
 import './index.css';
 
 function App() {
@@ -63,6 +64,11 @@ function App() {
               <div className="card-icon">📐</div>
               <h2>AI Shape Sorter</h2>
               <p>Scan real objects into shapes!</p>
+            </div>
+            <div className="menu-card" onClick={() => setCurrentGame('kitty')}>
+              <div className="card-icon">🐱</div>
+              <h2>Hide & Seek Kitty</h2>
+              <p>Find the kitty in the room!</p>
             </div>
           </div>
         </div>
@@ -128,6 +134,13 @@ function App() {
         <div style={{ position: 'relative' }}>
           <button className="back-btn" onClick={() => setCurrentGame('menu')}>⬅ BACK</button>
           <ShapeSorter />
+        </div>
+      )}
+
+      {currentGame === 'kitty' && (
+        <div style={{ position: 'relative' }}>
+          <button className="back-btn" onClick={() => setCurrentGame('menu')}>⬅ BACK</button>
+          <HideSeekKitty />
         </div>
       )}
     </div>

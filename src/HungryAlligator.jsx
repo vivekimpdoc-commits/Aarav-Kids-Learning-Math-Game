@@ -74,6 +74,9 @@ const HungryAlligator = () => {
       setEating(num1 >= num2 ? 'left' : 'right');
       setAlligatorStyle({ filter: `hue-rotate(${Math.random() * 360}deg)`, transform: 'scale(1.2) translateY(-20px)' });
       
+      const speech = new SpeechSynthesisUtterance("Correct! Yum yum!");
+      window.speechSynthesis.speak(speech);
+      
       // Change the hungry character image!
       const images = [alligatorImg, monster1, monster2];
       setCurrentImg(images[Math.floor(Math.random() * images.length)]);

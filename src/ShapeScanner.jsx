@@ -26,6 +26,9 @@ const SHAPES = [
 ];
 
 const ShapeScanner = () => {
+  const [score, setScore] = useState(0);
+  const [level, setLevel] = useState(1);
+  const [gameState, setGameState] = useState('playing');
   const [model, setModel] = useState(null);
   const [targetShape, setTargetShape] = useState(SHAPES[0]);
   const [isScanning, setIsScanning] = useState(false);
@@ -57,6 +60,15 @@ const ShapeScanner = () => {
       setStatus('AI Offline - Using Manual Discovery');
       setLoadingProgress(100);
     }
+  };
+
+  const generateTarget = () => {
+    const nextShape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+    setTargetShape(nextShape);
+    setStatus('Find the next shape!');
+    setDetections([]);
+    const ctx = canvasRef.current.getContext('2d');
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   };
 
   const startScan = () => {
@@ -127,21 +139,39 @@ const ShapeScanner = () => {
   const handleSuccess = () => {
     setIsScanning(false);
     setCelebrating(true);
-    setStatus('OBJECT MATCHED!');
+    setScore(s => s + 50);
+    setStatus(`✨ AMAZING! You found the ${targetShape.name}! ✨`);
     
-    setTimeout(() => {
-      setCelebrating(false);
-      const nextIndex = (SHAPES.indexOf(targetShape) + 1) % SHAPES.length;
-      setTargetShape(SHAPES[nextIndex]);
-      setStatus('Find the next shape!');
-      setDetections([]);
-      const ctx = canvasRef.current.getContext('2d');
-      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    }, 3000);
+    if (level === 50) {
+      setGameState('victory');
+    } else {
+      setTimeout(() => {
+        setCelebrating(false);
+        setLevel(l => l + 1);
+        generateTarget();
+      }, 3000);
+    }
+  };
+
+  const restartGame = () => {
+    setLevel(1);
+    setScore(0);
+    setGameState('playing');
+    generateTarget();
   };
 
   return (
-    <div className="scanner-container">
+    <div className="scanner-container game-container lab-bg">
+      {gameState === 'victory' && (
+        <div className="overlay" style={{background: 'rgba(99, 102, 241, 0.9)'}}>
+          <h1 className="victory-text" style={{fontSize: '5rem'}}>🏆 VISION MASTER!</h1>
+          <p style={{fontSize: '2rem'}}>Aarav, you completed all 50 hunting missions!</p>
+          <button className="restart-btn" onClick={restartGame}>NEW HUNT</button>
+        </div>
+      )}
+
+      <div className="score-board">SCORE: {score} | LEVEL: {level}</div>
+      
       <div className="scanner-bg-effect" />
       
       {loadingProgress < 100 && (

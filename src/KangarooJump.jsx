@@ -7,6 +7,8 @@ const KangarooJump = () => {
   const [currentPos, setCurrentPos] = useState(0);
   const [targetPos, setTargetPos] = useState(0);
   const [score, setScore] = useState(0);
+  const [level, setLevel] = useState(1);
+  const [gameState, setGameState] = useState('playing'); // 'playing', 'levelclear', 'victory'
   const [status, setStatus] = useState('Wait for the mission!');
   const [isJumping, setIsJumping] = useState(false);
   const [stepsTaken, setStepsTaken] = useState(0);
@@ -16,8 +18,10 @@ const KangarooJump = () => {
   }, []);
 
   const generateNewRound = () => {
-    const start = Math.floor(Math.random() * 5); // 0 to 4
-    const jump = Math.floor(Math.random() * 5) + 1; // 1 to 5
+    const maxStart = Math.min(15, 3 + Math.floor(level / 5));
+    const maxJump = Math.min(10, 2 + Math.floor(level / 8));
+    const start = Math.floor(Math.random() * maxStart); 
+    const jump = Math.floor(Math.random() * maxJump) + 1; 
     setStartPos(start);
     setJumpCount(jump);
     setCurrentPos(start);
@@ -43,7 +47,13 @@ const KangarooJump = () => {
         if (nextPos === targetPos) {
           setScore(s => s + 10);
           setStatus('🦘 AWESOME JUMP! Destination reached!');
-          setTimeout(generateNewRound, 2000);
+          const speech = new SpeechSynthesisUtterance("Great jumps! You reached " + targetPos);
+          window.speechSynthesis.speak(speech);
+          if (level === 50) {
+            setGameState('victory');
+          } else {
+            setGameState('levelclear');
+          }
         } else {
           setStatus(`Good! ${jumpCount - (stepsTaken + 1)} more steps to go!`);
         }
@@ -53,9 +63,38 @@ const KangarooJump = () => {
     }
   };
 
+  const nextLevel = () => {
+    setLevel(l => l + 1);
+    setGameState('playing');
+    generateNewRound();
+  };
+
+  const restartGame = () => {
+    setLevel(1);
+    setScore(0);
+    setGameState('playing');
+    generateNewRound();
+  };
+
   return (
     <div className="game-container outback-bg" style={{background: 'linear-gradient(#fcd34d, #fb923c)'}}>
-      <div className="score-board" style={{top: '2rem', color: '#78350f'}}>SCORE: {score}</div>
+      {gameState === 'victory' && (
+        <div className="overlay" style={{background: 'rgba(120, 53, 15, 0.9)'}}>
+          <h1 className="victory-text" style={{fontSize: '5rem'}}>🌏 WORLD TRAVELER!</h1>
+          <p style={{fontSize: '2rem'}}>Aarav, you jumped through all 50 regions!</p>
+          <button className="restart-btn" onClick={restartGame}>START OVER</button>
+        </div>
+      )}
+
+      {gameState === 'levelclear' && (
+        <div className="overlay" style={{background: 'rgba(249, 146, 60, 0.9)'}}>
+          <h1 className="victory-text" style={{color: 'white'}}>LEVEL {level} CLEAR!</h1>
+          <p style={{fontSize: '1.5rem', marginBottom: '2rem'}}>The next waterhole is far...</p>
+          <button className="restart-btn" onClick={nextLevel}>NEXT LEVEL</button>
+        </div>
+      )}
+
+      <div className="score-board" style={{top: '2rem', color: '#78350f'}}>SCORE: {score} | LEVEL: {level}</div>
       
       <h1 className="menu-title" style={{color: '#78350f', textShadow: '2px 2px 0 white', fontSize: '3.5rem'}}>Kangaroo Jump Addition</h1>
 
@@ -77,7 +116,7 @@ const KangarooJump = () => {
           </div>
           
           <div className="number-line">
-            {[...Array(11).keys()].map(num => (
+            {[...Array(targetPos + 3).keys()].map(num => (
               <div 
                 key={num} 
                 className={`line-point ${num === currentPos ? 'active' : ''} ${num === targetPos ? 'target' : ''}`}

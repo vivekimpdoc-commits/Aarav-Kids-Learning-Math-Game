@@ -10,6 +10,8 @@ const BalloonPop = () => {
   const [userInput, setUserInput] = useState('');
   const [score, setScore] = useState(0);
   const [status, setStatus] = useState('Watch the balloons pop!');
+  const [level, setLevel] = useState(1);
+  const [gameState, setGameState] = useState('playing'); // 'playing', 'levelclear', 'victory'
   const [isPopping, setIsPopping] = useState(false);
   const inputRef = useRef(null);
 
@@ -18,8 +20,9 @@ const BalloonPop = () => {
   }, []);
 
   const generateNewRound = () => {
-    const total = Math.floor(Math.random() * 6) + 4; // 4 to 9
-    const toPop = Math.floor(Math.random() * (total - 1)) + 1; // At least 1 pops
+    const maxTotal = Math.min(15, 5 + Math.floor(level / 4));
+    const total = Math.floor(Math.random() * (maxTotal - 4)) + 4; 
+    const toPop = Math.floor(Math.random() * (total - 1)) + 1; 
     
     setTotalBalloons(total);
     setPopCount(toPop);
@@ -71,15 +74,50 @@ const BalloonPop = () => {
     if (ans === totalBalloons - popCount) {
       setScore(s => s + 10);
       setStatus('🎈 FANTASTIC! Correct Subtraction! 🎈');
-      setTimeout(generateNewRound, 2000);
+      const speech = new SpeechSynthesisUtterance("Perfect! The answer is " + (totalBalloons - popCount));
+      window.speechSynthesis.speak(speech);
+      if (level === 50) {
+        setGameState('victory');
+      } else {
+        setGameState('levelclear');
+      }
     } else {
       setStatus('❌ Look closely! Count the ones still floating.');
     }
   };
 
+  const nextLevel = () => {
+    setLevel(l => l + 1);
+    setGameState('playing');
+    generateNewRound();
+  };
+
+  const restartGame = () => {
+    setLevel(1);
+    setScore(0);
+    setGameState('playing');
+    generateNewRound();
+  };
+
   return (
     <div className="game-container sky-bg" style={{background: 'linear-gradient(#bae6fd, #e0f2fe)'}}>
-      <div className="score-board" style={{top: '2rem', color: '#0369a1'}}>SCORE: {score}</div>
+      {gameState === 'victory' && (
+        <div className="overlay" style={{background: 'rgba(3, 105, 161, 0.9)'}}>
+          <h1 className="victory-text" style={{fontSize: '5rem'}}>🎉 SKY MASTER!</h1>
+          <p style={{fontSize: '2rem'}}>Aarav, you popped your way through 50 levels!</p>
+          <button className="restart-btn" onClick={restartGame}>FLY AGAIN</button>
+        </div>
+      )}
+
+      {gameState === 'levelclear' && (
+        <div className="overlay" style={{background: 'rgba(56, 189, 248, 0.9)'}}>
+          <h1 className="victory-text" style={{color: 'white'}}>LEVEL {level} CLEAR!</h1>
+          <p style={{fontSize: '1.5rem', marginBottom: '2rem'}}>Prepare for more balloons...</p>
+          <button className="restart-btn" onClick={nextLevel}>NEXT LEVEL</button>
+        </div>
+      )}
+
+      <div className="score-board" style={{top: '2rem', color: '#0369a1'}}>SCORE: {score} | LEVEL: {level}</div>
       
       <h1 className="menu-title" style={{color: '#0369a1', textShadow: '2px 2px 0 white', fontSize: '3.5rem'}}>Balloon Pop Subtraction</h1>
 

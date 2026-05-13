@@ -19,6 +19,8 @@ const FruitBasket = () => {
   const [status, setStatus] = useState('Wait for the fruits to fall!');
   const [basketFruits, setBasketFruits] = useState([]);
   const [fallingFruits, setFallingFruits] = useState([]);
+  const [level, setLevel] = useState(1);
+  const [gameState, setGameState] = useState('playing'); // 'playing', 'levelclear', 'victory'
   const inputRef = useRef(null);
 
   useEffect(() => {
@@ -26,8 +28,10 @@ const FruitBasket = () => {
   }, []);
 
   const generateNewRound = () => {
-    const a = Math.floor(Math.random() * 5) + 1;
-    const b = Math.floor(Math.random() * 4) + 1;
+    // Difficulty increases with level
+    const maxVal = Math.min(10, 3 + Math.floor(level / 5));
+    const a = Math.floor(Math.random() * maxVal) + 1;
+    const b = Math.floor(Math.random() * (maxVal - 2)) + 1;
     const fruit = FRUITS[Math.floor(Math.random() * FRUITS.length)];
     
     setNum1(a);
@@ -55,15 +59,50 @@ const FruitBasket = () => {
     if (ans === num1 + num2) {
       setScore(s => s + 10);
       setStatus('🌈 BRAVO! Correct Addition!');
-      setTimeout(generateNewRound, 2000);
+      const speech = new SpeechSynthesisUtterance("Great job! " + (num1 + num2));
+      window.speechSynthesis.speak(speech);
+      if (level === 50) {
+        setGameState('victory');
+      } else {
+        setGameState('levelclear');
+      }
     } else {
       setStatus('❌ Try counting again!');
     }
   };
 
+  const nextLevel = () => {
+    setLevel(l => l + 1);
+    setGameState('playing');
+    generateNewRound();
+  };
+
+  const restartGame = () => {
+    setLevel(1);
+    setScore(0);
+    setGameState('playing');
+    generateNewRound();
+  };
+
   return (
     <div className="game-container garden-bg" style={{background: 'linear-gradient(#87ceeb, #90ee90)'}}>
-      <div className="score-board" style={{top: '2rem'}}>SCORE: {score}</div>
+      {gameState === 'victory' && (
+        <div className="overlay" style={{background: 'rgba(21, 128, 61, 0.9)'}}>
+          <h1 className="victory-text" style={{fontSize: '5rem'}}>👑 FRUIT KING!</h1>
+          <p style={{fontSize: '2rem'}}>Aarav, you conquered all 50 levels!</p>
+          <button className="restart-btn" onClick={restartGame}>NEW GARDEN</button>
+        </div>
+      )}
+
+      {gameState === 'levelclear' && (
+        <div className="overlay" style={{background: 'rgba(56, 189, 248, 0.9)'}}>
+          <h1 className="victory-text" style={{color: 'white'}}>LEVEL {level} CLEAR!</h1>
+          <p style={{fontSize: '1.5rem', marginBottom: '2rem'}}>More fruits are ripening...</p>
+          <button className="restart-btn" onClick={nextLevel}>NEXT LEVEL</button>
+        </div>
+      )}
+
+      <div className="score-board" style={{top: '2rem'}}>SCORE: {score} | LEVEL: {level}</div>
       
       <h1 className="menu-title" style={{color: '#15803d', textShadow: '2px 2px 0 white', fontSize: '3rem'}}>Fruit Basket Addition</h1>
 

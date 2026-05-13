@@ -72,7 +72,9 @@ function MathQuest() {
   const handleHeroAttack = () => {
     setIsHeroAttacking(true);
     setFeedback({ text: level % 10 === 0 ? 'CRITICAL SMASH!' : 'CRITICAL HIT!', type: 'success' });
-    
+    const speech = new SpeechSynthesisUtterance("Correct!");
+    window.speechSynthesis.speak(speech);
+
     setTimeout(() => {
       setIsHeroAttacking(false);
       const baseDamage = level % 10 === 0 ? 15 : 25;
