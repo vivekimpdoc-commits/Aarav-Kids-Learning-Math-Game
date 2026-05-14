@@ -141,6 +141,8 @@ const ShapeScanner = () => {
     setCelebrating(true);
     setScore(s => s + 50);
     setStatus(`✨ AMAZING! You found the ${targetShape.name}! ✨`);
+    const speech = new SpeechSynthesisUtterance("Amazing! You found the " + targetShape.name);
+    window.speechSynthesis.speak(speech);
     
     if (level === 50) {
       setGameState('victory');

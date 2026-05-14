@@ -91,6 +91,8 @@ const ShapeSorter = () => {
   const handleMatch = (className) => {
     setScore(s => s + 50);
     setStatus(`✨ AMAZING! ${className} matches the ${targetShape.toUpperCase()}!`);
+    const speech = new SpeechSynthesisUtterance("Great matching! That is a " + targetShape);
+    window.speechSynthesis.speak(speech);
     
     if (level === 50) {
       setGameState('victory');
